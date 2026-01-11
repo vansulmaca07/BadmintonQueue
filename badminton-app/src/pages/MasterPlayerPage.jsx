@@ -104,8 +104,8 @@ export default function MasterPlayerPage() {
     if (!selectedPlayer || !fundAmount) return;
 
     const amount = parseFloat(fundAmount);
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount');
+    if (isNaN(amount) || amount === 0) {
+      alert('Please enter a valid amount (can be negative)');
       return;
     }
 
@@ -125,8 +125,8 @@ export default function MasterPlayerPage() {
         .insert([{
           user_id: selectedPlayer.id,
           amount: amount,
-          type: 'payment',
-          description: `Manual payment added`
+          type: amount > 0 ? 'payment' : 'game_charge',
+          description: amount > 0 ? `Manual payment added` : `Starting balance adjustment`
         }]);
 
       if (transError) throw transError;
@@ -135,10 +135,10 @@ export default function MasterPlayerPage() {
       setShowAddFundsModal(false);
       setSelectedPlayer(null);
       setFundAmount('');
-      alert('Funds added successfully!');
+      alert('Balance updated successfully!');
     } catch (error) {
-      console.error('Error adding funds:', error);
-      alert('Failed to add funds');
+      console.error('Error updating balance:', error);
+      alert('Failed to update balance');
     }
   };
 
@@ -326,7 +326,7 @@ export default function MasterPlayerPage() {
                       className="flex-1 bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-semibold active:bg-green-200 flex items-center justify-center gap-1"
                     >
                       <DollarSign size={14} />
-                      Add Funds
+                      Adjust Balance
                     </button>
                     <button
                       onClick={() => openTransferModal(player)}
@@ -398,13 +398,13 @@ export default function MasterPlayerPage() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Add Funds</h3>
+              <h3 className="text-xl font-bold">💰 Adjust Balance</h3>
               <button onClick={() => setShowAddFundsModal(false)} className="p-2">
                 <X size={24} />
               </button>
             </div>
             <p className="text-gray-600 mb-4">
-              Adding funds to <strong>{selectedPlayer.name}</strong>
+              Adjusting balance for <strong>{selectedPlayer.name}</strong>
             </p>
             <p className="text-sm text-gray-500 mb-2">
               Current balance: <span className={selectedPlayer.current_balance < 0 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
@@ -416,11 +416,14 @@ export default function MasterPlayerPage() {
               inputMode="decimal"
               value={fundAmount}
               onChange={(e) => setFundAmount(e.target.value)}
-              placeholder="Enter amount (¥)"
-              className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
+              placeholder="Enter amount (positive or negative)"
+              className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 mb-2"
               style={{ fontSize: '16px' }}
               autoFocus
             />
+            <p className="text-xs text-gray-500 mb-4">
+              💡 Tip: Use <strong>negative</strong> values to set starting debt (e.g., -1314)
+            </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddFundsModal(false)}
@@ -432,7 +435,7 @@ export default function MasterPlayerPage() {
                 onClick={addFunds}
                 className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold active:bg-green-700"
               >
-                Add Funds
+                Update Balance
               </button>
             </div>
           </div>
